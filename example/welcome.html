@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <script type="text/javascript" src="zepto.min.js"></script>
+        <script type="text/javascript" src="../min/zepto.couchdb.min.js"></script>
+        <title>CouchDB Test</title>
+    </head>
+    <body>
+        <script type="text/javascript">
+            $.couch.urlPrefix = 'http://localhost:5984';
+            $.couch.info({
+                success: function(data) {
+                    document.write(data.couchdb);
+                }
+            });
+        </script>
+    </body>
+</html>
