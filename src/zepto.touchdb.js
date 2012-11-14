@@ -58,7 +58,7 @@
   var uuidCache = [];
 
   $.extend($.couch, {
-    urlPrefix: 'touchdb://',
+    urlPrefix: 'http://.touchdb.',
 
     /**
      * You can obtain a list of active tasks by using the /_active_tasks URL.

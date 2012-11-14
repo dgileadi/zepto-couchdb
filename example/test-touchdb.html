@@ -1,0 +1,260 @@
+<html>
+    <head>
+        <script type="text/javascript" src="zepto.min.js"></script>
+        <script type="text/javascript" src="qunit-1.10.0.js"></script>
+        <script type="text/javascript" src="../min/zepto.touchdb.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="qunit-1.10.0.css">
+        <title>CouchDB Test</title>
+    </head>
+    <body>
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <script type="text/javascript">
+
+            // our tests are NOT atomic
+            QUnit.config.reorder = false;
+
+            var changecount = 0;
+
+            var error = function(status, errorType, error) {
+                ok(false, error);
+                start();
+            };
+
+            module('Global');
+
+            asyncTest('info', function() {
+                $.couch.info({
+                    success: function(data) {
+                        equal('Welcome', data.couchdb);
+                        start();
+                    }
+                });
+            });
+
+            asyncTest('allDbs', function() {
+                $.couch.allDbs({
+                    success: function(data) {
+                        ok(data.length >= 2);
+                        equal('_replicator', data[0]);
+                        equal('_users', data[1]);
+                        start();
+                    }
+                });
+            });
+
+            asyncTest('activeTasks', function() {
+                $.couch.activeTasks({
+                    success: function(data) {
+                        ok(data.length != null);
+                        start();
+                    }
+                });
+            });
+
+            asyncTest('config', function() {
+                $.couch.config({
+                    success: function(data) {
+                        equal('sequential', data);
+                        start();
+                    }
+                }, 'uuids', 'algorithm');
+            });
+
+            test('newUUID', function() {
+                var uuid = $.couch.newUUID();
+                ok(uuid.length);
+            });
+
+            module('Database Methods');
+
+            asyncTest('create', function() {
+                $.couch.db('mydb').create({
+                    success: function(data) {
+                        equal(true, data.ok);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('info', function() {
+                $.couch.db('mydb').info({
+                    success: function(data) {
+                        equal('mydb', data.db_name);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            test('changes', function() {
+                expect(0);
+                $.couch.db('mydb').changes().onChange(function(data) {
+                    changecount++;
+                });
+            });
+
+            asyncTest('saveDoc', function() {
+                var doc = {
+                    _id: 'mydocid'
+                };
+
+                $.couch.db('mydb').saveDoc(doc, {
+                    success: function(data) {
+                        equal(true, data.ok);
+                        ok(data.id);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('openDoc', function() {
+                $.couch.db('mydb').openDoc('mydocid', {
+                    success: function(data) {
+                        equal('mydocid', data._id);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('saveDoc update', function() {
+                $.couch.db('mydb').openDoc('mydocid', {
+                    success: function(doc) {
+                        var rev = doc._rev;
+                        $.couch.db('mydb').saveDoc(doc, {
+                            success: function(data) {
+                                equal(true, data.ok);
+                                ok(data.rev != rev);
+                                start();
+                            },
+                            error : error
+                        });
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('copyDoc', function() {
+                $.couch.db('mydb').copyDoc('mydocid', {
+                    success: function(data) {
+                        equal(true, data.ok);
+                        ok(data.id);
+                        start();
+                    },
+                    error : error
+                }, {
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('Destination', 'copydocid');
+                    }
+                });
+            });
+
+            asyncTest('removeDoc', function() {
+                $.couch.db('mydb').openDoc('mydocid', {
+                    success: function(doc) {
+                        $.couch.db('mydb').removeDoc(doc, {
+                            success: function(data) {
+                                equal(true, data.ok);
+                                start();
+                            },
+                            error : error
+                        });
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('removeDoc on copy', function() {
+                $.couch.db('mydb').openDoc('copydocid', {
+                    success: function(doc) {
+                        $.couch.db('mydb').removeDoc(doc, {
+                            success: function(data) {
+                                equal(true, data.ok);
+                                start();
+                            },
+                            error : error
+                        });
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('bulkSave', function() {
+                var docs = [{
+                    _id: 'bulkdocid1'
+                },{
+                    _id: 'bulkdocid2'
+                }];
+
+                $.couch.db('mydb').bulkSave({docs: docs}, {
+                    success: function(data) {
+                        equal(2, data.length);
+                        ok(data[0].id);
+                        ok(data[1].id);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('allDocs', function() {
+                $.couch.db('mydb').allDocs({
+                    success: function(data) {
+                        ok(data.total_rows);
+                        equal(2, data.rows.length);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('bulkRemove', function() {
+                $.couch.db('mydb').allDocs({
+                    success: function(data) {
+                        var docs = [];
+                        for (var i in data.rows)
+                            docs.push({
+                                _id: data.rows[i].id,
+                                _rev: data.rows[i].rev
+                            });
+                        $.couch.db('mydb').bulkRemove({docs: docs}, {
+                            success: function(data) {
+                                equal(2, data.length);
+                                start();
+                            },
+                            error : error
+                        });
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('compact', function() {
+                $.couch.db('mydb').compact({
+                    success: function(data) {
+                        equal(true, data.ok);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            test("were there any changes?", function() {
+                ok(changecount);
+            });
+
+            asyncTest('drop', function() {
+                $.couch.db('mydb').drop({
+                    success: function(data) {
+                        equal(true, data.ok);
+                        start();
+                    },
+                    error : error
+                });
+            });
+        </script>
+    </body>
+</html>

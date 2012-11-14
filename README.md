@@ -33,7 +33,7 @@ Since this is a very simple port of jquery.couch.js, with only a few modificatio
 
 ## TouchDB ##
 
-Since I ported jquery.couch.js to Zepto in order to use it with [PhoneGap](http://phonegap.com) and [TouchDB](https://github.com/couchbaselabs/TouchDB-iOS) I've created a version of the plugin that's specific to TouchDB--it simply removes some [methods that TouchDB doesn't support](https://github.com/couchbaselabs/TouchDB-iOS/wiki/Guide%3A-Differences-From-CouchDB), and helpfully pre-populates `$.couch.urlPrefix` with `touchdb://`.
+Since I ported jquery.couch.js to Zepto in order to use it with [PhoneGap](http://phonegap.com) and [TouchDB](https://github.com/couchbaselabs/TouchDB-iOS) I've created a version of the plugin that's specific to TouchDB--it simply removes some [methods that TouchDB doesn't support](https://github.com/couchbaselabs/TouchDB-iOS/wiki/Guide%3A-Differences-From-CouchDB), and helpfully pre-populates `$.couch.urlPrefix` with `http://.touchdb.` (see [TouchDB issue 134](https://github.com/couchbaselabs/TouchDB-iOS/issues/134) for why it doesn't use `touchdb:///`.
 
 ## License ##
 
