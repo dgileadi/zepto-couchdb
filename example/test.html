@@ -18,7 +18,7 @@
             var changecount = 0;
 
             var error = function(status, errorType, error) {
-                ok(false, error);
+                ok(false, status + ':' + errorType + ':' + error);
                 start();
             };
 
@@ -27,7 +27,7 @@
             asyncTest('info', function() {
                 $.couch.info({
                     success: function(data) {
-                        equal('Welcome', data.couchdb);
+                        equal(data.couchdb, 'Welcome');
                         start();
                     }
                 });
@@ -37,8 +37,8 @@
                 $.couch.allDbs({
                     success: function(data) {
                         ok(data.length >= 2);
-                        equal('_replicator', data[0]);
-                        equal('_users', data[1]);
+                        equal(data[0], '_replicator');
+                        equal(data[1], '_users');
                         start();
                     }
                 });
@@ -56,7 +56,7 @@
             asyncTest('config', function() {
                 $.couch.config({
                     success: function(data) {
-                        equal('sequential', data);
+                        equal(data, 'sequential');
                         start();
                     }
                 }, 'uuids', 'algorithm');
@@ -71,7 +71,7 @@
 
             asyncTest('userDb', function() {
                 $.couch.userDb(function(data) {
-                    equal('_users', data.name);
+                    equal(data.name, '_users');
                     start();
                 });
             });
@@ -84,8 +84,8 @@
 
                 $.couch.signup(userDoc, 'supersecurepassword', {
                     success: function(data) {
-                        equal(true, data.ok);
-                        equal(userDoc._id, data.id);
+                        equal(data.ok, true);
+                        equal(data.id, userDoc._id);
                         start();
                     },
                     error: error
@@ -97,8 +97,8 @@
                     name: 'bob',
                     password: 'supersecurepassword',
                     success: function(data) {
-                        equal(true, data.ok);
-                        equal('bob', data.name);
+                        equal(data.ok, true);
+                        equal(data.name, 'bob');
                         start();
                     },
                     error: error
@@ -108,8 +108,8 @@
             asyncTest('session', function() {
                 $.couch.session({
                     success: function(data) {
-                        equal(true, data.ok);
-                        equal('_users', data.info.authentication_db);
+                        equal(data.ok, true);
+                        equal(data.info.authentication_db, '_users');
                         start();
                     }
                 });
@@ -118,7 +118,7 @@
             asyncTest('logout', function() {
                 $.couch.logout({
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         start();
                     }
                 });
@@ -134,7 +134,7 @@
 
                         $.couch.db('_users').removeDoc(userDoc, {
                             success: function(data) {
-                                equal(true, data.ok);
+                                equal(data.ok, true);
                                 start();
                             },
                             error: error
@@ -149,7 +149,7 @@
             asyncTest('create', function() {
                 $.couch.db('mydb').create({
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         start();
                     },
                     error : error
@@ -159,7 +159,7 @@
             asyncTest('info', function() {
                 $.couch.db('mydb').info({
                     success: function(data) {
-                        equal('mydb', data.db_name);
+                        equal(data.db_name, 'mydb');
                         start();
                     },
                     error : error
@@ -180,7 +180,7 @@
 
                 $.couch.db('mydb').saveDoc(doc, {
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         ok(data.id);
                         start();
                     },
@@ -191,7 +191,7 @@
             asyncTest('openDoc', function() {
                 $.couch.db('mydb').openDoc('mydocid', {
                     success: function(data) {
-                        equal('mydocid', data._id);
+                        equal(data._id, 'mydocid');
                         start();
                     },
                     error : error
@@ -204,7 +204,7 @@
                         var rev = doc._rev;
                         $.couch.db('mydb').saveDoc(doc, {
                             success: function(data) {
-                                equal(true, data.ok);
+                                equal(data.ok, true);
                                 ok(data.rev != rev);
                                 start();
                             },
@@ -218,7 +218,7 @@
             asyncTest('copyDoc', function() {
                 $.couch.db('mydb').copyDoc('mydocid', {
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         ok(data.id);
                         start();
                     },
@@ -235,7 +235,7 @@
                     success: function(doc) {
                         $.couch.db('mydb').removeDoc(doc, {
                             success: function(data) {
-                                equal(true, data.ok);
+                                equal(data.ok, true);
                                 start();
                             },
                             error : error
@@ -250,7 +250,7 @@
                     success: function(doc) {
                         $.couch.db('mydb').removeDoc(doc, {
                             success: function(data) {
-                                equal(true, data.ok);
+                                equal(data.ok, true);
                                 start();
                             },
                             error : error
@@ -269,7 +269,7 @@
 
                 $.couch.db('mydb').bulkSave({docs: docs}, {
                     success: function(data) {
-                        equal(2, data.length);
+                        equal(data.length, 2);
                         ok(data[0].id);
                         ok(data[1].id);
                         start();
@@ -282,7 +282,7 @@
                 $.couch.db('mydb').allDocs({
                     success: function(data) {
                         ok(data.total_rows);
-                        equal(2, data.rows.length);
+                        equal(data.rows.length, 2);
                         start();
                     },
                     error : error
@@ -296,8 +296,32 @@
 
                 $.couch.db('mydb').query(mapFunction, '_count', 'javascript', {
                     success: function(data) {
-                        equal(1, data.rows.length);
-                        equal(2, data.rows[0].value);
+                        equal(data.rows.length, 1);
+                        equal(data.rows[0].value, 2);
+                        start();
+                    },
+                    error : error
+                });
+            });
+
+            asyncTest('saveDesignDoc', function() {
+                var doc = {
+                    _id: '_design/default',
+                    language: 'javascript',
+                    views: {
+                        all: {
+                            map: 'function(doc) {emit(null, doc)}'
+                        }
+                    },
+                    lists: {
+                        all: 'function(doc, req) { send("["); var row; while (row = getRow()) send(JSON.stringify(row) + ","); send("{}]"); };'
+                    }
+                };
+
+                $.couch.db('mydb').saveDoc(doc, {
+                    success: function(data) {
+                        equal(data.ok, true);
+                        ok(data.id);
                         start();
                     },
                     error : error
@@ -308,64 +332,50 @@
                 $.couch.db('mydb').allDesignDocs({
                     success: function(data) {
                         ok(data.total_rows);
-                        equal(0, data.rows.length);
                         start();
                     },
                     error : error
                 });
             });
 
-//             asyncTest('allApps', function() {
-//                 $.couch.db('mydb').allApps({
-//                     success: function(data) {
-//                         start();
-//                     },
-//                     eachApp: function(appName, appPath, ddoc) {
-// console.log('got app ' + appName + ' at ' + appPath + ': ' + ddoc);
-//                     },
-//                     error : error
-//                 });
-//             });
+            asyncTest('view', function() {
+                $.couch.db('mydb').view('default/all', {
+                    success: function(data) {
+                        equal(data.total_rows, 2);
+                        start();
+                    },
+                    error : error
+                });
+            });
 
-//             asyncTest('view', function() {
-//                 $.couch.db('mydb').view('default/all', {
-//                     success: function(data) {
-// console.log(JSON.stringify(data));
-//                         start();
-//                     },
-//                     error : error
-//                 });
-//             });
-
-//             asyncTest('list', function() {
-//                 $.couch.db('mydb').list('default/all', 'all', {
-//                     success: function(data) {
-// console.log(JSON.stringify(data));
-//                         start();
-//                     },
-//                     error : error
-//                 });
-//             });
+            asyncTest('list', function() {
+                $.couch.db('mydb').list('default/all', 'all', {}, {
+                    success: function(data) {
+                        ok(data.length);
+                        start();
+                    }
+                });
+            });
 
             asyncTest('viewCleanup', function() {
                 $.couch.db('mydb').viewCleanup({
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         start();
                     },
                     error : error
                 });
             });
 
-            // asyncTest('compactView', function() {
-            //     $.couch.db('mydb').compactView('default', {
-            //         success: function(data) {
-            //             equal(true, data.ok);
-            //             start();
-            //         },
-            //         error : error
-            //     });
-            // });
+            asyncTest('compactView', function() {
+                $.couch.db('mydb').compactView('default', {
+                    success: function(data) {
+                        equal(data.ok, true);
+                        start();
+                    },
+                    error : error
+                });
+            });
 
             asyncTest('bulkRemove', function() {
                 $.couch.db('mydb').allDocs({
@@ -378,7 +388,7 @@
                             });
                         $.couch.db('mydb').bulkRemove({docs: docs}, {
                             success: function(data) {
-                                equal(2, data.length);
+                                ok(data.length);
                                 start();
                             },
                             error : error
@@ -391,7 +401,7 @@
             asyncTest('compact', function() {
                 $.couch.db('mydb').compact({
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         start();
                     },
                     error : error
@@ -405,7 +415,7 @@
             asyncTest('drop', function() {
                 $.couch.db('mydb').drop({
                     success: function(data) {
-                        equal(true, data.ok);
+                        equal(data.ok, true);
                         start();
                     },
                     error : error
